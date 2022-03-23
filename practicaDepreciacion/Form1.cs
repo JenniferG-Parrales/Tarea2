@@ -15,6 +15,7 @@ namespace practicaDepreciacion
     public partial class Form1 : Form
     {
         IActivoServices activoServices;
+        private int idSeleccionado;
         public Form1(IActivoServices ActivoServices)
         {
             this.activoServices = ActivoServices;
@@ -107,6 +108,21 @@ namespace practicaDepreciacion
 
         private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
+            //if (e.RowIndex >= 0)
+            //{
+              //  FrmDepreciacion depreciacion = new FrmDepreciacion(activoServices.Read()[e.RowIndex]);
+               // depreciacion.ShowDialog();
+            //}
+        }
+
+        private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            idSeleccionado = (int)dataGridView1.Rows[e.RowIndex].Cells[0].Value;
+            MessageBox.Show(idSeleccionado.ToString());
+        }
+
+        private void dataGridView1_CellDoubleClick(object sender, DataGridViewCellEventArgs e)
+        {
             if (e.RowIndex >= 0)
             {
                 FrmDepreciacion depreciacion = new FrmDepreciacion(activoServices.Read()[e.RowIndex]);
@@ -117,6 +133,55 @@ namespace practicaDepreciacion
         private void Form1_Load(object sender, EventArgs e)
         {
             dataGridView1.DataSource = activoServices.Read();
+        }
+
+        private void btnActualizar_Click(object sender, EventArgs e)
+        {
+            bool verificado = verificar();
+            if (verificado == false)
+            {
+                MessageBox.Show("Tienes que llenar todos los formularios.");
+            }
+            else
+            {
+
+                Activo activo = new Activo()
+                {
+                    Nombre = txtNombre.Text,
+                    Valor = double.Parse(txtValor.Text),
+                    ValorResidual = double.Parse(txtValorR.Text),
+                    VidaUtil = int.Parse(txtVidaU.Text)
+                };
+                activoServices.Add(activo);
+                  dataGridView1.DataSource = null;
+                limpiar();
+                 dataGridView1.DataSource = activoServices.Read();
+
+            }
+        }
+
+        private void btnEliminar_Click(object sender, EventArgs e)
+        { 
+            if (idSeleccionado != 0)
+            {
+                //se puede cambiar a que solo reciba el id
+                Activo activo = activoServices.GetById(idSeleccionado);
+                if (activoServices.Eliminar(activo))
+                {
+                    MessageBox.Show($"El elemento con {idSeleccionado} fue eliminado correctamente");
+                   // dataGridView1.DataSource = null;
+                    MessageBox.Show("MEnsaje despues de establecer datasource en null");
+                   // dataGridView1.DataSource = activoServices.Read();
+                }
+                else
+                {
+                    MessageBox.Show("El elemento no fue eliminado correctamente");
+                }
+            }
+            else
+            {
+                MessageBox.Show("No se ha seleccionado nada");
+            }
         }
     }
 }
